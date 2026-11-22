@@ -1,0 +1,2 @@
+molecule,geometry,R,angle_deg,E_vqe,E_fci,E_hf,abs_error_mHa,n_qubits,sector_dim,n_pauli_terms,n_params,iterations,wall_s
+LiH,R=1.6000,1.6,,-7.882096599915246,-7.882096599921158,-7.861864769808654,5.9117155615240335e-09,10,25,276,14,10,0.8516149520874023
