@@ -1,0 +1,9 @@
+pyscf==2.15.1
+openfermion==1.8.1
+openfermionpyscf==0.5
+scipy==1.16.3
+numpy==2.4.6
+matplotlib
+pytest
+jax
+jaxlib
