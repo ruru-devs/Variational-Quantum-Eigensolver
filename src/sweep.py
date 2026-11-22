@@ -23,7 +23,7 @@ def run_single_geometry(
     angle_deg: Optional[float] = None,
     use_jax: bool = False,
     results_dir: str = "results",
-    drive_dir: Optional[str] = "/content/drive/MyDrive/chem-vqe",
+    drive_dir: Optional[str] = "/content/drive/MyDrive/mol-simul-VQE",
 ) -> Dict[str, Any]:
     """Run VQE for a single geometry, save CSV and plot, and return summary dict."""
     os.makedirs(results_dir, exist_ok=True)
@@ -110,7 +110,7 @@ def run_sweep(
     r_list: List[float],
     use_jax: bool = False,
     results_dir: str = "results",
-    drive_dir: Optional[str] = "/content/drive/MyDrive/chem-vqe",
+    drive_dir: Optional[str] = "/content/drive/MyDrive/mol-simul-VQE",
 ) -> pd.DataFrame:
     """Run potential energy curve sweep with warm-start and checkpointing."""
     os.makedirs(results_dir, exist_ok=True)

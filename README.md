@@ -45,7 +45,7 @@ The core logic is modularized under [`src/`](file:///home/Rurushu/Projects/Molec
    - **Total Wall Time**: $28.42\text{ s}$
    - Results: [`results/lih_sweep.csv`](file:///home/Rurushu/Projects/Molecular_Simulation/results/lih_sweep.csv), [`results/lih_sweep.png`](file:///home/Rurushu/Projects/Molecular_Simulation/results/lih_sweep.png)
 
-All sweeps feature checkpointing in [`results/checkpoints/`](file:///home/Rurushu/Projects/Molecular_Simulation/results/checkpoints) and are synced to `/content/drive/MyDrive/chem-vqe/`.
+All sweeps feature checkpointing in [`results/checkpoints/`](file:///home/Rurushu/Projects/Molecular_Simulation/results/checkpoints) and are synced to `/content/drive/MyDrive/mol-simul-VQE/`.
 
 ---
 
