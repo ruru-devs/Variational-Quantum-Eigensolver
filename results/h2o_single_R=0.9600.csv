@@ -1,0 +1,2 @@
+molecule,geometry,R,angle_deg,E_vqe,E_fci,E_hf,abs_error_mHa,n_qubits,sector_dim,n_pauli_terms,n_params,iterations,wall_s
+H2O,R=0.9600,0.96,104.5,-75.01297675119707,-75.01307688879737,-74.96331905254011,0.10013760029892183,12,225,551,44,11,5.954130172729492
