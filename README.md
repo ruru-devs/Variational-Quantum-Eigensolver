@@ -45,6 +45,24 @@ The core logic is modularized under [`src/`](file:///home/Rurushu/Projects/Molec
    - **Total Wall Time**: $28.42\text{ s}$
    - Results: [`results/lih_sweep.csv`](file:///home/Rurushu/Projects/Molecular_Simulation/results/lih_sweep.csv), [`results/lih_sweep.png`](file:///home/Rurushu/Projects/Molecular_Simulation/results/lih_sweep.png)
 
+---
+
+## Phase 2 Results Summary ($\text{H}_2\text{O}$ Potential Energy Surfaces)
+
+1. **$\text{H}_2\text{O}$ Symmetric O-H Stretch ($R = 0.70\text{ \AA}$ to $2.00\text{ \AA}$, step $0.05\text{ \AA}$, $\theta_{\text{HOH}} = 104.5^\circ$, 27 points, JAX autodiff)**:
+   - **Equilibrium Geometry**: $R = 1.00\text{ \AA}$
+   - **VQE Minimum**: $-75.01966989\text{ Ha}$ | **FCI Minimum**: $-75.01978171\text{ Ha}$
+   - **Mean Error**: $0.2950\text{ mHa}$ | **Max Error**: $2.0449\text{ mHa}$
+   - **Total Wall Time**: $126.93\text{ s}$
+   - Results: [`results/h2o_sweep.csv`](file:///home/Rurushu/Projects/Molecular_Simulation/results/h2o_sweep.csv), [`results/h2o_sweep.png`](file:///home/Rurushu/Projects/Molecular_Simulation/results/h2o_sweep.png)
+
+2. **$\text{H}_2\text{O}$ 2D Bond-Angle & O-H Stretch Grid ($R \in [0.80, 1.30]\text{ \AA}$ step $0.10\text{ \AA}$, $\theta_{\text{HOH}} \in [90^\circ, 130^\circ]$ step $10^\circ$, 30 points, JAX autodiff)**:
+   - **Equilibrium Geometry**: $R = 1.00\text{ \AA}, \theta_{\text{HOH}} = 100^\circ$
+   - **VQE Minimum**: $-75.02146685\text{ Ha}$ | **FCI Minimum**: $-75.02156705\text{ Ha}$
+   - **Mean Error**: $0.2073\text{ mHa}$ | **Max Error**: $0.7527\text{ mHa}$ (all within $1.6\text{ mHa}$ chemical accuracy)
+   - **Total Wall Time**: $138.24\text{ s}$
+   - Results: [`results/h2o_2d_sweep.csv`](file:///home/Rurushu/Projects/Molecular_Simulation/results/h2o_2d_sweep.csv), [`results/h2o_2d_sweep.png`](file:///home/Rurushu/Projects/Molecular_Simulation/results/h2o_2d_sweep.png), [`results/h2o_2d_error.png`](file:///home/Rurushu/Projects/Molecular_Simulation/results/h2o_2d_error.png)
+
 All sweeps feature checkpointing in [`results/checkpoints/`](file:///home/Rurushu/Projects/Molecular_Simulation/results/checkpoints) and are synced to `/content/drive/MyDrive/mol-simul-VQE/`.
 
 ---
