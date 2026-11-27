@@ -114,6 +114,7 @@ def run_sweep(
     use_adjoint: bool = False,
     results_dir: str = "results",
     drive_dir: Optional[str] = "/content/drive/MyDrive/mol-simul-VQE",
+    max_points: Optional[int] = None,
 ) -> pd.DataFrame:
     """Run potential energy curve sweep with warm-start and checkpointing."""
     os.makedirs(results_dir, exist_ok=True)
@@ -139,6 +140,9 @@ def run_sweep(
             print(f"Failed to read checkpoint: {e}. Starting fresh.")
 
     # Re-use ansatz basis matrices across geometries if active space matches
+    if max_points is not None:
+        r_list = r_list[:max_points]
+
     ansatz: Optional[UCCSDAnsatz] = None
 
     for idx, r in enumerate(r_list):
