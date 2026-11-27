@@ -25,6 +25,7 @@ class VQESolver:
         hamiltonian_sector: MolecularHamiltonianSector,
         ansatz: Optional[UCCSDAnsatz] = None,
         use_jax: bool = False,
+        use_adjoint: bool = False,
     ):
         self.ham_sec = hamiltonian_sector
         self.n_qubits = self.ham_sec.n_qubits
@@ -38,9 +39,14 @@ class VQESolver:
         self.H_sparse = self.ham_sec.sparse_H
         self.n_params = self.ansatz.n_params
         self.use_jax = use_jax
+        self.use_adjoint = use_adjoint
 
         if self.use_jax:
             self._setup_jax()
+        if self.use_adjoint:
+            nodes, weights = np.polynomial.legendre.leggauss(8)
+            self._gl_nodes = 0.5 * (nodes + 1.0)
+            self._gl_weights = 0.5 * weights
 
     def _setup_jax(self):
         """Prepare JAX autodiff graph for exact gradient evaluation.
@@ -75,6 +81,54 @@ class VQESolver:
         H_psi = self.H_sparse.dot(psi)
         return float(np.vdot(psi, H_psi).real)
 
+    def evaluate_energy_and_grad_adjoint(self, theta: np.ndarray) -> tuple:
+        """Evaluate energy and exact gradient using sparse Duhamel/adjoint propagation."""
+        from scipy.sparse.linalg import expm_multiply
+
+        if np.all(theta == 0.0):
+            psi_1 = self.ansatz.hf_state.copy()
+            chi_1 = self.H_sparse.dot(psi_1)
+            energy = float(np.vdot(psi_1, chi_1).real)
+            grad = np.array(
+                [2.0 * np.vdot(chi_1, Gk.dot(psi_1)).real for Gk in self.ansatz.basis_matrices],
+                dtype=float,
+            )
+            return energy, grad
+
+        G = self.ansatz.get_generator_sparse(theta)
+
+        # Forward pass along Gauss-Legendre quadrature nodes in [0, 1]
+        psi_list = []
+        psi_curr = self.ansatz.hf_state.copy()
+        s_prev = 0.0
+        for s in self._gl_nodes:
+            psi_curr = expm_multiply(G * (s - s_prev), psi_curr)
+            psi_list.append(psi_curr)
+            s_prev = s
+        psi_1 = expm_multiply(G * (1.0 - s_prev), psi_curr)
+
+        chi_1 = self.H_sparse.dot(psi_1)
+        energy = float(np.vdot(psi_1, chi_1).real)
+
+        # Backward (adjoint) pass: chi(s) = exp(-(1-s)G) chi(1)
+        chi_rev = []
+        chi_curr = chi_1
+        s_prev = 1.0
+        for s in reversed(self._gl_nodes):
+            chi_curr = expm_multiply(G * (s - s_prev), chi_curr)
+            chi_rev.append(chi_curr)
+            s_prev = s
+        chi_list = list(reversed(chi_rev))
+
+        # Accumulate gradient across quadrature nodes (sparse matvec per generator)
+        grad = np.zeros(self.n_params, dtype=float)
+        for w, psi_s, chi_s in zip(self._gl_weights, psi_list, chi_list):
+            chi_conj = chi_s.conj()
+            for k, Gk in enumerate(self.ansatz.basis_matrices):
+                grad[k] += 2.0 * w * np.dot(chi_conj, Gk.dot(psi_s)).real
+
+        return energy, grad
+
     def optimize(
         self,
         theta_init: Optional[np.ndarray] = None,
@@ -98,6 +152,19 @@ class VQESolver:
                 val, grad = self._jax_val_and_grad(jnp.array(theta_vec), self._H_jax)
                 iteration_energies.append(float(val))
                 return float(val), np.array(grad, dtype=float)
+
+            res = minimize(
+                fun=objective,
+                x0=theta0,
+                method="L-BFGS-B",
+                jac=True,
+                options={"maxiter": maxiter, "gtol": gtol, "ftol": ftol},
+            )
+        elif self.use_adjoint:
+            def objective(theta_vec):
+                val, grad = self.evaluate_energy_and_grad_adjoint(theta_vec)
+                iteration_energies.append(float(val))
+                return float(val), grad
 
             res = minimize(
                 fun=objective,

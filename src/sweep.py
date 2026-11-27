@@ -22,6 +22,7 @@ def run_single_geometry(
     r: Optional[float] = None,
     angle_deg: Optional[float] = None,
     use_jax: bool = False,
+    use_adjoint: bool = False,
     results_dir: str = "results",
     drive_dir: Optional[str] = "/content/drive/MyDrive/mol-simul-VQE",
 ) -> Dict[str, Any]:
@@ -33,7 +34,7 @@ def run_single_geometry(
     mol = get_molecule(molecule_name, r=r, angle_deg=angle_deg)
     ham_sec = MolecularHamiltonianSector(mol)
     ansatz = UCCSDAnsatz(ham_sec.n_qubits, ham_sec.n_electrons)
-    solver = VQESolver(ham_sec, ansatz=ansatz, use_jax=use_jax)
+    solver = VQESolver(ham_sec, ansatz=ansatz, use_jax=use_jax, use_adjoint=use_adjoint)
 
     vqe_res = solver.optimize(theta_init=np.zeros(ansatz.n_params))
     wall_s = time.time() - t0
@@ -110,6 +111,7 @@ def run_sweep(
     r_list: List[float],
     angle_deg: Optional[float] = None,
     use_jax: bool = False,
+    use_adjoint: bool = False,
     results_dir: str = "results",
     drive_dir: Optional[str] = "/content/drive/MyDrive/mol-simul-VQE",
 ) -> pd.DataFrame:
@@ -147,7 +149,7 @@ def run_sweep(
         if ansatz is None:
             ansatz = UCCSDAnsatz(ham_sec.n_qubits, ham_sec.n_electrons)
 
-        solver = VQESolver(ham_sec, ansatz=ansatz, use_jax=use_jax)
+        solver = VQESolver(ham_sec, ansatz=ansatz, use_jax=use_jax, use_adjoint=use_adjoint)
         vqe_res = solver.optimize(theta_init=theta_warm)
         wall_s = time.time() - t0
 
@@ -282,7 +284,7 @@ def run_2d_sweep(
         if ansatz is None:
             ansatz = UCCSDAnsatz(ham_sec.n_qubits, ham_sec.n_electrons)
 
-        solver = VQESolver(ham_sec, ansatz=ansatz, use_jax=use_jax)
+        solver = VQESolver(ham_sec, ansatz=ansatz, use_jax=use_jax, use_adjoint=use_adjoint)
         vqe_res = solver.optimize(theta_init=theta_warm)
         wall_s = time.time() - t0
 
