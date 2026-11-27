@@ -1,0 +1,2 @@
+molecule,geometry,R,angle_deg,E_vqe,E_fci,E_hf,abs_error_mHa,n_qubits,sector_dim,n_pauli_terms,n_params,iterations,wall_s
+N2,R=1.0980,1.098,,-107.65056190300425,-107.6527037933158,-107.49597503059053,2.1418903115488774,16,3136,1177,135,12,34.18808937072754
