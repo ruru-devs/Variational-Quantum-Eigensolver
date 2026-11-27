@@ -43,25 +43,31 @@ class VQESolver:
             self._setup_jax()
 
     def _setup_jax(self):
-        """Prepare JAX autodiff graph for exact gradient evaluation."""
+        """Prepare JAX autodiff graph for exact gradient evaluation.
+        Caches the JIT-compiled function on self.ansatz so geometry sweeps
+        reuse the compiled XLA kernel without recompiling per geometry.
+        """
         import jax
         jax.config.update("jax_enable_x64", True)
         import jax.numpy as jnp
 
-        basis_jax = jnp.array(
-            [m.toarray() for m in self.ansatz.basis_matrices],
-            dtype=jnp.complex128,
-        )
-        H_jax = jnp.array(self.H_sparse.toarray(), dtype=jnp.complex128)
-        hf_jax = jnp.zeros(self.ansatz.sector_dim, dtype=jnp.complex128).at[0].set(1.0)
+        if not hasattr(self.ansatz, "_jax_val_and_grad"):
+            basis_jax = jnp.array(
+                [m.toarray() for m in self.ansatz.basis_matrices],
+                dtype=jnp.complex128,
+            )
+            hf_jax = jnp.zeros(self.ansatz.sector_dim, dtype=jnp.complex128).at[0].set(1.0)
 
-        def jax_loss(theta):
-            G = jnp.tensordot(theta, basis_jax, axes=1)
-            U = jax.scipy.linalg.expm(G)
-            psi = U @ hf_jax
-            return jnp.real(jnp.vdot(psi, H_jax @ psi))
+            def jax_loss(theta, H_mat):
+                G = jnp.tensordot(theta, basis_jax, axes=1)
+                U = jax.scipy.linalg.expm(G)
+                psi = U @ hf_jax
+                return jnp.real(jnp.vdot(psi, H_mat @ psi))
 
-        self._jax_val_and_grad = jax.jit(jax.value_and_grad(jax_loss))
+            self.ansatz._jax_val_and_grad = jax.jit(jax.value_and_grad(jax_loss))
+
+        self._H_jax = jnp.array(self.H_sparse.toarray(), dtype=jnp.complex128)
+        self._jax_val_and_grad = self.ansatz._jax_val_and_grad
 
     def evaluate_energy(self, theta: np.ndarray) -> float:
         """Evaluate <psi(theta)| H |psi(theta)>."""
@@ -89,7 +95,7 @@ class VQESolver:
             import jax.numpy as jnp
 
             def objective(theta_vec):
-                val, grad = self._jax_val_and_grad(jnp.array(theta_vec))
+                val, grad = self._jax_val_and_grad(jnp.array(theta_vec), self._H_jax)
                 iteration_energies.append(float(val))
                 return float(val), np.array(grad, dtype=float)
 
