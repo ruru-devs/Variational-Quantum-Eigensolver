@@ -237,6 +237,7 @@ def run_2d_sweep(
     r_list: List[float],
     angle_list: List[float],
     use_jax: bool = False,
+    use_adjoint: bool = False,
     results_dir: str = "results",
     drive_dir: Optional[str] = "/content/drive/MyDrive/mol-simul-VQE",
     max_points: Optional[int] = None,
